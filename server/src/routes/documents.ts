@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { db } from '../db';
 
-const router = Router({ mergeParams: true });
+const router = Router();
 
 function isProjectMember(projectId: string, userId: string): boolean {
   const project = db.getProjectById(projectId);
@@ -12,7 +12,7 @@ function isProjectMember(projectId: string, userId: string): boolean {
 }
 
 // GET /projects/:projectId/documents
-router.get('/', requireAuth, (req, res: Response) => {
+router.get('/:projectId/documents', requireAuth, (req, res: Response) => {
   const userId = (req as AuthenticatedRequest).userId;
   const { projectId } = req.params;
   if (!isProjectMember(projectId, userId)) {
@@ -26,7 +26,7 @@ router.get('/', requireAuth, (req, res: Response) => {
 });
 
 // POST /projects/:projectId/documents
-router.post('/', requireAuth, (req, res: Response) => {
+router.post('/:projectId/documents', requireAuth, (req, res: Response) => {
   const userId = (req as AuthenticatedRequest).userId;
   const { projectId } = req.params;
   if (!isProjectMember(projectId, userId)) {
@@ -52,7 +52,7 @@ router.post('/', requireAuth, (req, res: Response) => {
 });
 
 // GET /projects/:projectId/documents/:docId
-router.get('/:docId', requireAuth, (req, res: Response) => {
+router.get('/:projectId/documents/:docId', requireAuth, (req, res: Response) => {
   const userId = (req as AuthenticatedRequest).userId;
   const { projectId, docId } = req.params;
   if (!isProjectMember(projectId, userId)) {
@@ -67,7 +67,7 @@ router.get('/:docId', requireAuth, (req, res: Response) => {
 });
 
 // PUT /projects/:projectId/documents/:docId
-router.put('/:docId', requireAuth, (req, res: Response) => {
+router.put('/:projectId/documents/:docId', requireAuth, (req, res: Response) => {
   const userId = (req as AuthenticatedRequest).userId;
   const { projectId, docId } = req.params;
   if (!isProjectMember(projectId, userId)) {
@@ -87,13 +87,12 @@ router.put('/:docId', requireAuth, (req, res: Response) => {
 });
 
 // DELETE /projects/:projectId/documents/:docId
-router.delete('/:docId', requireAuth, (req, res: Response) => {
+router.delete('/:projectId/documents/:docId', requireAuth, (req, res: Response) => {
   const userId = (req as AuthenticatedRequest).userId;
   const { projectId, docId } = req.params;
   const project = db.getProjectById(projectId);
   if (!project) { res.status(404).json({ error: 'Project not found' }); return; }
 
-  // Only owner or document author can delete
   const doc = db.getDocumentById(docId);
   if (!doc || doc.projectId !== projectId) {
     res.status(404).json({ error: 'Document not found' }); return;
