@@ -28,7 +28,9 @@ export default function ChatPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    const socket = io(process.env.REACT_APP_API_URL || 'http://localhost:4000', {
+    const serverUrl = process.env.REACT_APP_API_URL ||
+      (process.env.NODE_ENV === 'production' ? window.location.origin : 'http://localhost:4000');
+    const socket = io(serverUrl, {
       auth: { token },
     });
     socketRef.current = socket;

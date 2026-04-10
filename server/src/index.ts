@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 
@@ -32,6 +33,15 @@ app.use('/friends', friendRoutes);
 app.use('/messages', messageRoutes);
 app.use('/projects', projectRoutes);
 app.use('/projects', documentRoutes);
+
+// Serve React frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const clientBuild = path.join(__dirname, '../../client/build');
+  app.use(express.static(clientBuild));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientBuild, 'index.html'));
+  });
+}
 
 // Socket.io: real-time chat
 const userSockets = new Map<string, string>(); // userId -> socketId
